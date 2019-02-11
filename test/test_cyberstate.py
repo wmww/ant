@@ -12,8 +12,8 @@ class TestCS(unittest.TestCase):
 
         def apply(self):
             for d in self.dep:
-                if isinstance(d, TestCS.MockState) and d.applied == 0:
-                    raise "State applied before dependency"
+                if isinstance(d, TestCS.MockState):
+                    assert d.applied > 0
             self.applied += 1
 
     def test_single_state(self):
