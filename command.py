@@ -32,35 +32,38 @@ class TimoutError(Error):
         self.time = time
 
     def __str__(self):
-        return '`' + ' '.join(arg_list) + '` timed out after ' + self.time + ' seconds'
+        return '`' + ' '.join(self.args) + '` timed out after ' + str(self.time) + ' second' + ('s' if self.time != 1 else '')
 
-def run(arg_list, timout=1, interactive=False, cwd=None, stdin_text=None, raise_if_fail=False):
+def run(arguments, timout=1, capture_output=True, cwd=None, input_str=None, ignore_error=False):
     """
     Run a command, returning a result
-    arg_list: a list of strings, the command to run followed by the arguments
+    arguments: a list of strings, the command to run followed by the arguments
     timout: seconds
-    interactive: if true, stdout/stderr will not be captured, and instead will get passed on directly to the user
+    capture_output: if to capture and return output, else passes stdout and stderr directly to the user
     cwd: current working directory to run the command in
-    stdin_text: input for the command
-    raise_if_fail: if to raise a command.Error if the command fails
+    input_str: stdin input for the command
+    ignore_error: if false, may raise a command.FailError or command.TimoutoutError. If true, will always return a result
     """
     #log('Running `' + ' '.join(arg_list) + '`')
-    out_popen_arg = None if interactive else subprocess.PIPE
+    out_popen_arg = subprocess.PIPE if capture_output else None
+    in_popen_arg =  subprocess.PIPE if input_str != None else None
     try:
         preexec_fn_popen_arg = os.setsid
         kill_subprocess_tree_on_timout = True
     except:
         # if os.setsid is not available (Windows), we wont be able to kill the child process if it has children
-        # test_timout_actually_works_with_sh is the test that should fail
+        # test_timout_actually_works_with_sh is the test that should fail (though it will also fail because sh)
         preexec_fn_popen_arg = None
         kill_subprocess_tree_on_timout = False
-    p = subprocess.Popen(arg_list,
+    p = subprocess.Popen(arguments,
                          cwd=cwd,
+                         stdin=in_popen_arg,
                          stdout=out_popen_arg,
                          stderr=out_popen_arg,
                          preexec_fn=preexec_fn_popen_arg)
     try:
-        stdout, stderr = p.communicate(stdin_text, timout)
+        input_bytes = bytes(input_str, 'utf-8') if input_str != None else None
+        stdout, stderr = p.communicate(input_bytes, timout)
         did_timout = False
     except subprocess.TimeoutExpired:
         if kill_subprocess_tree_on_timout:
@@ -69,7 +72,7 @@ def run(arg_list, timout=1, interactive=False, cwd=None, stdin_text=None, raise_
             p.kill() # will usually work, but will block if the process has running children
         stdout, stderr = p.communicate()
         did_timout = True
-    if not interactive:
+    if capture_output:
         stdout = stdout.decode('utf-8') if stdout != None else ''
         stderr = stderr.decode('utf-8') if stderr != None else ''
     else:
@@ -77,8 +80,9 @@ def run(arg_list, timout=1, interactive=False, cwd=None, stdin_text=None, raise_
         stderr = None
     exit_code = p.returncode
     result = Result(stdout, stderr, exit_code)
-    if did_timout:
-        raise TimoutError(arg_list, result, timout)
-    if raise_if_fail and exit_code != 0:
-        raise FailError(arg_list, result)
-    return Result(stdout, stderr, exit_code)
+    if not ignore_error:
+        if did_timout:
+            raise TimoutError(arguments, result, timout)
+        if exit_code != 0:
+            raise FailError(arguments, result)
+    return result
