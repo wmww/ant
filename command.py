@@ -13,6 +13,17 @@ class Result:
         self.stderr = stderr
         self.exit_code = exit_code
 
+    def __str__(self):
+        ret = ''
+        ret += 'exit code: ' + str(self.exit_code)
+        if self.stdout != None:
+            ret += ('\nstdout: ' +
+                    '\n        | '.join(self.stdout.strip().splitlines()))
+        if self.stderr != None:
+            ret += ('\nstderr: ' +
+                    '\n        | '.join(self.stderr.strip().splitlines()))
+        return ret
+
 class Error(cs.Error):
     pass
 
@@ -23,7 +34,7 @@ class FailError(Error):
         self.result = result
 
     def __str__(self):
-        return '`' + ' '.join(self.args) + '` exited with code ' + str(self.result.exit_code)
+        return '`' + ' '.join(self.args) + '` failed with ' + str(self.result)
 
 class TimoutError(Error):
     def __init__(self, args, result, time):
@@ -32,52 +43,50 @@ class TimoutError(Error):
         self.time = time
 
     def __str__(self):
-        return '`' + ' '.join(self.args) + '` timed out after ' + str(self.time) + ' second' + ('s' if self.time != 1 else '')
+        return ('`' + ' '.join(self.args) + '`' +
+                ' timed out after ' + str(self.time) + ' second' + ('s' if self.time != 1 else '') +
+                ' with ' + str(self.result))
 
-def run(arguments, timout=1, capture_output=True, cwd=None, input_str=None, ignore_error=False):
+def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, sudo=False, ignore_error=False):
     """
     Run a command, returning a result
     arguments: a list of strings, the command to run followed by the arguments
-    timout: seconds
-    capture_output: if to capture and return output, else passes stdout and stderr directly to the user
-    cwd: current working directory to run the command in
+    timout: seconds before terminating the child. After SIGTERM, the child gets 100ms (or timout, whichever's shorter) to exit before getting SIGKILL
     input_str: stdin input for the command
+    passthrough: if to pass stdout and stderr directly to the user, or capture the output
+    cwd: current working directory to run the command in
+    sudo: if to run the command with sudo (currently just prepends arguments with sudo -S, may get more functionality in the future)
     ignore_error: if false, may raise a command.FailError or command.TimoutoutError. If true, will always return a result
     """
     #log('Running `' + ' '.join(arg_list) + '`')
-    out_popen_arg = subprocess.PIPE if capture_output else None
-    in_popen_arg =  subprocess.PIPE if input_str != None else None
-    try:
-        preexec_fn_popen_arg = os.setsid
-        kill_subprocess_tree_on_timout = True
-    except:
-        # if os.setsid is not available (Windows), we wont be able to kill the child process if it has children
-        # test_timout_actually_works_with_sh is the test that should fail (though it will also fail because sh)
-        preexec_fn_popen_arg = None
-        kill_subprocess_tree_on_timout = False
+    if sudo:
+        arguments = ['sudo', '-S'] + arguments
+    out_popen_arg = None if passthrough else subprocess.PIPE
+    in_popen_arg = None if input_str == None else subprocess.PIPE
     p = subprocess.Popen(arguments,
                          cwd=cwd,
                          stdin=in_popen_arg,
                          stdout=out_popen_arg,
                          stderr=out_popen_arg,
-                         preexec_fn=preexec_fn_popen_arg)
+                         start_new_session=True)
     try:
         input_bytes = bytes(input_str, 'utf-8') if input_str != None else None
         stdout, stderr = p.communicate(input_bytes, timout)
         did_timout = False
     except subprocess.TimeoutExpired:
-        if kill_subprocess_tree_on_timout:
+        try:
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+            stdout, stderr = p.communicate(None, min(timout, 0.1))
+        except subprocess.TimeoutExpired:
             os.killpg(os.getpgid(p.pid), signal.SIGKILL)
-        else:
-            p.kill() # will usually work, but will block if the process has running children
-        stdout, stderr = p.communicate()
+            stdout, stderr = p.communicate()
         did_timout = True
-    if capture_output:
-        stdout = stdout.decode('utf-8') if stdout != None else ''
-        stderr = stderr.decode('utf-8') if stderr != None else ''
-    else:
+    if passthrough:
         stdout = None
         stderr = None
+    else:
+        stdout = stdout.decode('utf-8') if stdout != None else ''
+        stderr = stderr.decode('utf-8') if stderr != None else ''
     exit_code = p.returncode
     result = Result(stdout, stderr, exit_code)
     if not ignore_error:
