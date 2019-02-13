@@ -3,7 +3,7 @@ import signal
 import command
 
 # if you have unexplained or intermittent test failures (especially on slower hardware) consider raising these
-default_timout = 0.05 # default time to test timout
+default_timout = 0.01 # default time to test timout
 default_time_long = default_timout * 100 + 1 # default amount to sleep (which will get interrupted)
 default_timout_tolerance = default_timout * 0.1 + 0.01 # how much longer than timout to accept
 default_python_timout = default_timout * 2 + 0.1 # Python startup is too damn slow
@@ -146,7 +146,7 @@ except:
         result = command.run(['cat'], input_str='xyz\n')
         self.assertEqual(result.stdout, 'xyz\n')
 
-    def test_sudo(self):
+    def disabled_test_sudo(self):
         with self.assertRaises(command.TimoutError) as cm:
             command.run(['echo', 'abc'], timout=default_timout, sudo=True)
         e = cm.exception

@@ -1,7 +1,6 @@
 import subprocess
 import os
 import signal
-import cyberstate as cs
 
 class Result:
     """The result of a command, returned by run()"""
@@ -24,7 +23,7 @@ class Result:
                     '\n        | '.join(self.stderr.strip().splitlines()))
         return ret
 
-class Error(cs.Error):
+class Error(Exception):
     pass
 
 class FailError(Error):
