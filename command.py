@@ -46,7 +46,7 @@ class TimoutError(Error):
                 ' timed out after ' + str(self.time) + ' second' + ('s' if self.time != 1 else '') +
                 ' with ' + str(self.result))
 
-def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, sudo=False, ignore_error=False):
+def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, ignore_error=False):
     """
     Run a command, returning a result
     arguments: a list of strings, the command to run followed by the arguments
@@ -54,12 +54,9 @@ def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, sudo=F
     input_str: stdin input for the command
     passthrough: if to pass stdout and stderr directly to the user, or capture the output
     cwd: current working directory to run the command in
-    sudo: if to run the command with sudo (currently just prepends arguments with sudo -S, may get more functionality in the future)
     ignore_error: if false, may raise a command.FailError or command.TimoutoutError. If true, will always return a result
     """
     #log('Running `' + ' '.join(arg_list) + '`')
-    if sudo:
-        arguments = ['sudo', '-S'] + arguments
     out_popen_arg = None if passthrough else subprocess.PIPE
     in_popen_arg = None if input_str == None else subprocess.PIPE
     p = subprocess.Popen(arguments,
