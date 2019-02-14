@@ -1,6 +1,6 @@
 import unittest
 import signal
-import command
+import util.command as command
 
 # if you have unexplained or intermittent test failures (especially on slower hardware) consider raising these
 default_timout = 0.01 # default time to test timout

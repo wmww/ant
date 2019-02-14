@@ -1,8 +1,12 @@
 #!/usr/bin/python3
 
 import unittest
+import sys
+import os
 
-loader = unittest.TestLoader()
-suite = loader.discover('./test')
+suite = unittest.TestSuite()
+suite.addTest(unittest.TestLoader().discover('util/test/'))
+suite.addTest(unittest.TestLoader().discover('ant/test/'))
 runner = unittest.TextTestRunner()
-runner.run(suite)
+result = runner.run(suite)
+exit(0 if result.wasSuccessful() else 1)

@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
-import cyberstate as cs
-from package import Package
+import ant
 
-manager = cs.Manager()
-manager.add(Package('syncthing'))
-manager.apply()
+queen = ant.Queen()
+queen.add(ant.Install('syncthing'))
+queen.march()

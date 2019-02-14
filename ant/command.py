@@ -1,16 +1,13 @@
-import command
-from state import State
+from util import command
+from ant import Ant
 
-class Command(State):
-    def __init__(self):
-        self.args = []
+class Command(Ant):
+    def __init__(self, *args):
+        self.args = list(args)
         self.kwargs = {}
         self.deps = []
         self.sudo = False
-
-    def with_dependency(self, state):
-        self.deps.append(state)
-        return self
+        self.result = None
 
     def with_arg(self, arg):
         self.args.append(arg)
@@ -40,10 +37,23 @@ class Command(State):
         self.sudo = True
         return self
 
-    def apply(self):
+    def with_ignore_error(self):
+        self.kwargs['ignore_error'] = True
+        return self
+
+    def march(self):
         args = self.args
         if not args:
             raise Error('No command arguments supplied')
         if self.sudo:
             args = ['sudo', '-S'] + args
-        command.run(args, ignore_error=False, **self.kwargs)
+        self.result = command.run(args, **self.kwargs)
+
+class Tester(Command):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.with_ignore_error()
+
+    def success(self):
+        assert self.result
+        return self.result.exit_code == 0
