@@ -19,6 +19,6 @@ class Ant:
         else:
             return []
 
-    def march(self):
+    def march(self, queen):
         """Do the thing this ant can do"""
         pass

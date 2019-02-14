@@ -19,7 +19,7 @@ class Install(ant.Ant):
         self.package = package
         self.deps = [Update()]
 
-    def march(self):
+    def march(self, queen):
         return [
             ant.Command()
                 .with_args('apt', 'install', self.package.get_name())

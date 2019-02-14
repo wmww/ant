@@ -7,7 +7,7 @@ class MockAnt(ant.Ant):
         self.after = after
         self.deps = deps
 
-    def march(self):
+    def march(self, queen):
         for d in self.deps:
             if isinstance(d, MockAnt):
                 assert d.applied > 0

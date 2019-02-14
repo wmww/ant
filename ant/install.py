@@ -20,7 +20,7 @@ class Install(Ant):
         self.builder = PackageManagerBuilder()
         self.deps = [self.builder]
 
-    def march(self):
+    def march(self, queen):
         return self.builder.build(self)
 
     def get_name(self):

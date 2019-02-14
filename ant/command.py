@@ -41,7 +41,7 @@ class Command(Ant):
         self.kwargs['ignore_error'] = True
         return self
 
-    def march(self):
+    def march(self, queen):
         args = self.args
         if not args:
             raise Error('No command arguments supplied')

@@ -9,16 +9,16 @@ class Queen:
             raise ant.Error('add must only be given an Ant')
         self.ants.append(a)
 
-    def _all_march(ants):
+    def _list_march(self, ants):
         for a in ants:
-            Queen._all_march(a._dependencies())
-            next = a.march()
+            self._list_march(a._dependencies())
+            next = a.march(self)
             if next != None:
                 if isinstance(next, ant.Ant):
                     next = [next]
                 if not isinstance(next, list):
                     raise ant.Error('.march() should have retured an ant, a list or None')
-                Queen._all_march(next)
+                self._list_march(next)
 
     def march(self):
-        Queen._all_march(self.ants)
+        self._list_march(self.ants)
