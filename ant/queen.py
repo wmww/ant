@@ -1,4 +1,5 @@
 import ant
+import util.command
 
 class Queen:
     def __init__(self):
@@ -19,6 +20,9 @@ class Queen:
                 if not isinstance(next, list):
                     raise ant.Error('.march() should have retured an ant, a list or None')
                 self._list_march(next)
+
+    def run_command(self, args, **kwargs):
+        return util.command.run(args, **kwargs)
 
     def march(self):
         self._list_march(self.ants)

@@ -1,4 +1,3 @@
-from util import command
 from ant import Ant
 
 class Command(Ant):
@@ -47,7 +46,7 @@ class Command(Ant):
             raise Error('No command arguments supplied')
         if self.sudo:
             args = ['sudo', '-S'] + args
-        self.result = command.run(args, **self.kwargs)
+        self.result = queen.run_command(args, **self.kwargs)
 
 class Tester(Command):
     def __init__(self, *args):
