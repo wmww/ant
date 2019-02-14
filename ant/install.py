@@ -8,7 +8,6 @@ class PackageManagerBuilder(Ant):
 
     def build(self, package):
         if self.apt_test.success():
-            print(dir(apt))
             return apt.Install(package)
         else:
             raise ant.Error('No package manager found')

@@ -99,3 +99,20 @@ class TestCommandTester(unittest.TestCase):
         q.march()
         self.assertFalse(a.success())
 
+class TestCommandTesterMockCommand(unittest.TestCase):
+    def test_command_tester_mock_true(self):
+        q = MockCommandQueen()
+        q.installed = {'echo': True}
+        a = ant.command.Tester('echo')
+        q.add(a)
+        q.march()
+        self.assertTrue(a.success())
+
+    def test_command_tester_mock_false(self):
+        q = MockCommandQueen()
+        q.installed = {'echo': False}
+        a = ant.command.Tester('echo')
+        q.add(a)
+        q.march()
+        self.assertFalse(a.success())
+
