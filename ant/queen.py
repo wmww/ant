@@ -1,13 +1,16 @@
 import ant
 import util.command
+import util.log
 
 class Queen:
     def __init__(self):
         self.ants = []
 
     def add(self, a):
-        if not isinstance(a, ant.Ant):
-            raise ant.Error('add must only be given an Ant')
+        assert isinstance(a, ant.Ant), 'add must only be given an Ant'
+        assert not hasattr(a, 'queen'), type(a).__name__ + ' ant added to multiple queens'
+        a.queen = self
+        a.log = util.log.StreamLogger(a)
         self.ants.append(a)
 
     def _list_march(self, ants):
