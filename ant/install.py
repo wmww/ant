@@ -20,3 +20,6 @@ class Install(Ant):
 
     def get_name(self):
         return self.name
+
+    def __str__(self):
+        return 'Install ' + str(self.name)

@@ -13,3 +13,6 @@ class Ant:
     def march(self, queen):
         """Do the thing this ant can do"""
         pass
+
+    def __str__(self):
+        return type(self).__name__

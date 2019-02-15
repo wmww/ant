@@ -28,3 +28,6 @@ class Install(ant.Ant):
                 .with_passthrough()
                 .with_sudo()
         ]
+
+    def __str__(self):
+        return 'Install ' + str(self.package.name) + ' with apt'

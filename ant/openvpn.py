@@ -17,4 +17,4 @@ class OpenVpn(ant.Ant):
         zips = glob.glob(path.join(self.source_path, '*.zip'))
         if not zips:
             raise ant.Error('Could not find zipped VPN data files in ' + self.source_path)
-        self.log.boring('Zip files ' + ', '.join(zips))
+        self.log.boring('Zip files: \n    ' + '\n    '.join(zips))

@@ -56,6 +56,9 @@ class Command(ant.Ant):
             args = ['sudo', '-S'] + args
         self.result = queen.run_command(args, **self.kwargs)
 
+    def __str__(self):
+        return 'run `' + ' '.join(self.args) + '`'
+
 class SuccessCheck(ant.Check):
     def __init__(self, command):
         assert isinstance(command, Command)
@@ -68,7 +71,13 @@ class SuccessCheck(ant.Check):
         assert self.command.result
         return self.command.result.success()
 
+    def __str__(self):
+        return 'check if `' + ' '.join(self.command.args) + '` succeeds'
+
 class ExistsCheck(SuccessCheck):
     def check(self, queen):
         assert self.command.result
         return self.command.result.exit_code != 127
+
+    def __str__(self):
+        return 'check if `' + ' '.join(self.command.args) + '` exists'
