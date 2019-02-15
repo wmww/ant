@@ -2,6 +2,8 @@ import subprocess
 import os
 import signal
 
+NOT_FOUND_EXIT_CODE = 127
+
 class Result:
     """The result of a command, returned by run()"""
     def __init__(self, stdout, stderr, exit_code):
@@ -12,8 +14,25 @@ class Result:
         self.stderr = stderr
         self.exit_code = exit_code
 
-    def is_success(self):
+    def success(self):
+        """If the process ended successfully"""
         return self.exit_code == 0
+
+    def found(self):
+        """If the command was found"""
+        return self.exit_code != NOT_FOUND_EXIT_CODE
+
+    def timout(self):
+        """If the process ended because it timed out"""
+        return self.exit_code == -signal.SIGTERM or self.exit_code == -signal.SIGKILL
+
+    def terminated(self):
+        """If the processed ended because it was aksed to with SIGTERM"""
+        return self.exit_code == -signal.SIGTERM
+
+    def killed(self):
+        """If the process ended because it was forced to with SIGKILL"""
+        return self.exit_code == -signal.SIGKILL
 
     def __str__(self):
         ret = ''
@@ -100,7 +119,7 @@ def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, ignore
         if ignore_error:
             stdout = None
             stderr = None
-            exit_code = 127
+            exit_code = NOT_FOUND_EXIT_CODE
         else:
             raise NotFoundError(e.filename)
     result = Result(stdout, stderr, exit_code)

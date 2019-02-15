@@ -8,7 +8,7 @@ class OpenVpn(ant.Ant):
         self.get_zips_command = ant.Command('ls', source_path)
         self.deps = [
             ant.Command('openvpn', '--version')
-                .exists_check()
+                .check_exists()
                 .if_false(ant.Install('openvpn')),
             self.get_zips_command
                 .with_ignore_error()

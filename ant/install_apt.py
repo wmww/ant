@@ -4,7 +4,7 @@ def install_timout():
     return 3600
 
 def get_installed_check():
-    return ant.Command('apt', '-v').success_check()
+    return ant.Command('apt', '-v').check_success()
 
 class Update(ant.Ant):
     def __init__(self):

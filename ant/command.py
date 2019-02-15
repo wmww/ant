@@ -40,10 +40,12 @@ class Command(ant.Ant):
         self.kwargs['ignore_error'] = True
         return self
 
-    def success_check(self):
+    def check_success(self):
+        """Return a Check object depending on this command (and make this command not raise on error)"""
         return SuccessCheck(self)
 
-    def exists_check(self):
+    def check_exists(self):
+        """Return a Check object depending on this command (and make this command not raise on error)"""
         return ExistsCheck(self)
 
     def march(self, queen):
@@ -64,7 +66,7 @@ class SuccessCheck(ant.Check):
 
     def check(self, queen):
         assert self.command.result
-        return self.command.result.is_success()
+        return self.command.result.success()
 
 class ExistsCheck(SuccessCheck):
     def check(self, queen):
