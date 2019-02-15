@@ -1,5 +1,6 @@
 from .ant import Ant
-from .ant import Error
+from .error import Error
 from .queen import Queen
+from .check import Check
 from .command import Command
 from .install import Install

@@ -1,6 +1,6 @@
-from ant import Ant
+import ant
 
-class Command(Ant):
+class Command(ant.Ant):
     def __init__(self, *args):
         self.args = list(args)
         self.kwargs = {}
@@ -40,6 +40,9 @@ class Command(Ant):
         self.kwargs['ignore_error'] = True
         return self
 
+    def into_check(self):
+        return Check(self)
+
     def march(self, queen):
         args = self.args
         if not args:
@@ -48,11 +51,14 @@ class Command(Ant):
             args = ['sudo', '-S'] + args
         self.result = queen.run_command(args, **self.kwargs)
 
-class Tester(Command):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.with_ignore_error()
+class Check(ant.Check):
+    def __init__(self, command):
+        assert isinstance(command, Command)
+        self.command = command
+        self.deps = [
+            command.with_ignore_error()
+        ]
 
-    def success(self):
-        assert self.result
-        return self.result.exit_code == 0
+    def check(self, queen):
+        assert self.command.result
+        return self.command.result.exit_code == 0

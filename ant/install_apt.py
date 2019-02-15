@@ -3,9 +3,8 @@ import ant
 def install_timout():
     return 3600
 
-class Tester(ant.command.Tester):
-    def __init__(self):
-        super().__init__('apt', '-v')
+def get_installed_check():
+    return ant.Command('apt', '-v').into_check()
 
 class Update(ant.Ant):
     def __init__(self):

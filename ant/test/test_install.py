@@ -1,11 +1,11 @@
 import unittest
 import ant
+import mock
 import ant.install_apt
-from mock_command_queen import MockCommandQueen
 
 class TestInstall(unittest.TestCase):
     def test_install_apt(self):
-        q = MockCommandQueen()
+        q = mock.Queen()
         q.installed = {'apt': True, 'pacman': False}
         a = ant.Install('cowsay')
         q.add(a)
