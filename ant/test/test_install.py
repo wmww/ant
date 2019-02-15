@@ -10,15 +10,40 @@ class TestInstall(unittest.TestCase):
         a = ant.Install('cowsay')
         q.add(a)
         q.march()
-        self.assertEqual(q.commands[0][0], ['apt', '-v'])
-        self.assertEqual(q.commands[0][1], {'ignore_error': True})
-        self.assertEqual(q.commands[1][0], ['sudo', '-S', 'apt', 'update'])
-        self.assertEqual(q.commands[1][1], {
+        i = 0
+        self.assertEqual(q.commands[i][0], ['apt', '-v'])
+        self.assertEqual(q.commands[i][1], {'ignore_error': True})
+        i += 1
+        self.assertEqual(q.commands[i][0], ['pacman', '--version'])
+        self.assertEqual(q.commands[i][1], {'ignore_error': True})
+        i += 1
+        self.assertEqual(q.commands[i][0], ['sudo', '-S', 'apt', 'update'])
+        self.assertEqual(q.commands[i][1], {
             'timout': ant.install_apt.install_timout(),
             'passthrough': True
         })
-        self.assertEqual(q.commands[2][0], ['sudo', '-S', 'apt', 'install', 'cowsay'])
-        self.assertEqual(q.commands[2][1], {
+        i += 1
+        self.assertEqual(q.commands[i][0], ['sudo', '-S', 'apt', 'install', 'cowsay'])
+        self.assertEqual(q.commands[i][1], {
+            'timout': ant.install_apt.install_timout(),
+            'passthrough': True
+        })
+
+    def test_install_pacman(self):
+        q = mock.Queen()
+        q.installed = {'apt': False, 'pacman': True}
+        a = ant.Install('cowsay')
+        q.add(a)
+        q.march()
+        i = 0
+        self.assertEqual(q.commands[i][0], ['apt', '-v'])
+        self.assertEqual(q.commands[i][1], {'ignore_error': True})
+        i += 1
+        self.assertEqual(q.commands[i][0], ['pacman', '--version'])
+        self.assertEqual(q.commands[i][1], {'ignore_error': True})
+        i += 1
+        self.assertEqual(q.commands[i][0], ['sudo', '-S', 'pacman', '-S', 'cowsay'])
+        self.assertEqual(q.commands[i][1], {
             'timout': ant.install_apt.install_timout(),
             'passthrough': True
         })

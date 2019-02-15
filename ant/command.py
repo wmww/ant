@@ -40,8 +40,11 @@ class Command(ant.Ant):
         self.kwargs['ignore_error'] = True
         return self
 
-    def into_check(self):
-        return Check(self)
+    def success_check(self):
+        return SuccessCheck(self)
+
+    def exists_check(self):
+        return ExistsCheck(self)
 
     def march(self, queen):
         args = self.args
@@ -51,7 +54,7 @@ class Command(ant.Ant):
             args = ['sudo', '-S'] + args
         self.result = queen.run_command(args, **self.kwargs)
 
-class Check(ant.Check):
+class SuccessCheck(ant.Check):
     def __init__(self, command):
         assert isinstance(command, Command)
         self.command = command
@@ -61,4 +64,9 @@ class Check(ant.Check):
 
     def check(self, queen):
         assert self.command.result
-        return self.command.result.exit_code == 0
+        return self.command.result.is_success()
+
+class ExistsCheck(SuccessCheck):
+    def check(self, queen):
+        assert self.command.result
+        return self.command.result.exit_code != 127

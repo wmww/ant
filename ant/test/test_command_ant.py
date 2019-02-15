@@ -77,14 +77,14 @@ class TestMockCommand(unittest.TestCase):
 class TestCommandCheck(unittest.TestCase):
     def test_command_check_true(self):
         q = ant.Queen()
-        a = ant.Command('true').into_check()
+        a = ant.Command('true').success_check()
         q.add(a)
         q.march()
         self.assertTrue(a.is_true())
 
     def test_command_check_false(self):
         q = ant.Queen()
-        a = ant.Command('false').into_check()
+        a = ant.Command('false').success_check()
         q.add(a)
         q.march()
         self.assertFalse(a.is_true())
@@ -93,7 +93,7 @@ class TestCommandCheckMockCommand(unittest.TestCase):
     def test_command_check_mock_true(self):
         q = mock.Queen()
         q.installed = {'echo': True}
-        a = ant.Command('echo').into_check()
+        a = ant.Command('echo').success_check()
         q.add(a)
         q.march()
         self.assertTrue(a.is_true())
@@ -101,7 +101,7 @@ class TestCommandCheckMockCommand(unittest.TestCase):
     def test_command_check_mock_false(self):
         q = mock.Queen()
         q.installed = {'echo': False}
-        a = ant.Command('echo').into_check()
+        a = ant.Command('echo').success_check()
         q.add(a)
         q.march()
         self.assertFalse(a.is_true())

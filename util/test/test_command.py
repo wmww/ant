@@ -15,6 +15,7 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(result.stdout, 'abc\n')
         self.assertEqual(result.stderr, '')
         self.assertEqual(result.exit_code, 0)
+        self.assertTrue(result.is_success())
 
     def test_true_capturing(self):
         result = command.run(['true'])
@@ -37,6 +38,7 @@ class TestCommand(unittest.TestCase):
     def test_false_result(self):
         result = command.run(['false'], ignore_error=True)
         self.assertEqual(result.exit_code, 1)
+        self.assertFalse(result.is_success())
 
     def test_false_raise(self):
         with self.assertRaises(command.FailError) as cm:
@@ -58,6 +60,18 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(e.result.stdout, '')
         self.assertRegex(e.result.stderr, '\\[sudo\\] password for .*:')
         self.assertEqual(e.result.exit_code, 1)
+
+    def test_not_found(self):
+        with self.assertRaises(command.NotFoundError) as cm:
+            result = command.run(['a_command_that_doesnt_exist'])
+        self.assertEqual(cm.exception.name, 'a_command_that_doesnt_exist')
+
+    def test_not_found_no_raise(self):
+        result = command.run(['a_command_that_doesnt_exist'], ignore_error=True)
+        self.assertFalse(result.is_success())
+        self.assertEqual(result.stdout, None)
+        self.assertEqual(result.stderr, None)
+        self.assertEqual(result.exit_code, 127)
 
 if timout_tests_enabled:
     class TestCommandTimout(unittest.TestCase):

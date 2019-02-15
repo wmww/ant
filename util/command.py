@@ -12,6 +12,9 @@ class Result:
         self.stderr = stderr
         self.exit_code = exit_code
 
+    def is_success(self):
+        return self.exit_code == 0
+
     def __str__(self):
         ret = ''
         ret += 'exit code: ' + str(self.exit_code)
@@ -25,6 +28,14 @@ class Result:
 
 class Error(Exception):
     pass
+
+class NotFoundError(Error):
+    """Raised when the command to be run is not found"""
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name + ' not found'
 
 class FailError(Error):
     """Raised in run() when raise_on_fail is true"""
@@ -59,31 +70,39 @@ def run(arguments, timout=1, input_str=None, passthrough=False, cwd=None, ignore
     #log('Running `' + ' '.join(arg_list) + '`')
     out_popen_arg = None if passthrough else subprocess.PIPE
     in_popen_arg = None if input_str == None else subprocess.PIPE
-    p = subprocess.Popen(arguments,
-                         cwd=cwd,
-                         stdin=in_popen_arg,
-                         stdout=out_popen_arg,
-                         stderr=out_popen_arg,
-                         start_new_session=True)
     try:
-        input_bytes = bytes(input_str, 'utf-8') if input_str != None else None
-        stdout, stderr = p.communicate(input_bytes, timout)
-        did_timout = False
-    except subprocess.TimeoutExpired:
+        p = subprocess.Popen(arguments,
+                             cwd=cwd,
+                             stdin=in_popen_arg,
+                             stdout=out_popen_arg,
+                             stderr=out_popen_arg,
+                             start_new_session=True)
         try:
-            os.killpg(os.getpgid(p.pid), signal.SIGTERM)
-            stdout, stderr = p.communicate(None, min(timout, 0.1))
+            input_bytes = bytes(input_str, 'utf-8') if input_str != None else None
+            stdout, stderr = p.communicate(input_bytes, timout)
+            did_timout = False
         except subprocess.TimeoutExpired:
-            os.killpg(os.getpgid(p.pid), signal.SIGKILL)
-            stdout, stderr = p.communicate()
-        did_timout = True
-    if passthrough:
-        stdout = None
-        stderr = None
-    else:
-        stdout = stdout.decode('utf-8') if stdout != None else ''
-        stderr = stderr.decode('utf-8') if stderr != None else ''
-    exit_code = p.returncode
+            try:
+                os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+                stdout, stderr = p.communicate(None, min(timout, 0.1))
+            except subprocess.TimeoutExpired:
+                os.killpg(os.getpgid(p.pid), signal.SIGKILL)
+                stdout, stderr = p.communicate()
+            did_timout = True
+        if passthrough:
+            stdout = None
+            stderr = None
+        else:
+            stdout = stdout.decode('utf-8') if stdout != None else ''
+            stderr = stderr.decode('utf-8') if stderr != None else ''
+        exit_code = p.returncode
+    except FileNotFoundError as e:
+        if ignore_error:
+            stdout = None
+            stderr = None
+            exit_code = 127
+        else:
+            raise NotFoundError(e.filename)
     result = Result(stdout, stderr, exit_code)
     if not ignore_error:
         if did_timout:
