@@ -5,9 +5,9 @@ import util.command
 """Mock classes used for testing"""
 
 class Ant(ant.Ant):
-    def __init__(self, deps=None, after=None):
+    def __init__(self, deps=None, next=None):
         self.applied = False
-        self.after = after
+        self.next = next
         self.deps = deps
 
     def march(self, queen):
@@ -16,7 +16,7 @@ class Ant(ant.Ant):
                 assert d.applied
         assert not self.applied
         self.applied = True
-        return self.after
+        return self.next
 
 class Queen(ant.Queen):
     """
