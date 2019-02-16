@@ -5,7 +5,7 @@ from util import color_code
 class Type(enum.Enum):
     BORING = 1
     YIKES = 2
-    ARGH = 3
+    BIG_YIKES = 3
 
 class Logger:
     """
@@ -32,8 +32,8 @@ class Logger:
     def yikes(self, *msg):
         self.log(self.context, Type.YIKES, ' '.join(map(lambda m: str(m), msg)))
 
-    def argh(self, *msg):
-        self.log(self.context, Type.ARGH, ' '.join(map(lambda m: str(m), msg)))
+    def big_yikes(self, *msg):
+        self.log(self.context, Type.BIG_YIKES, ' '.join(map(lambda m: str(m), msg)))
 
 class NullLogger(Logger):
     def log(self, context, log_type, message):
@@ -73,8 +73,8 @@ class StreamLogger(Logger):
             type_str = 'Yikes'
             clr = '1;33'
             out_file = self.err
-        elif log_type == Type.ARGH:
-            type_str = 'Argh'
+        elif log_type == Type.BIG_YIKES:
+            type_str = 'Big yikes'
             clr = '1;31'
             out_file = self.err
         else:
