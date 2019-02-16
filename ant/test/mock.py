@@ -34,18 +34,14 @@ class Queen(ant.Queen):
     Sudo, although part of the args array, is not treated as a command, and doesn't need to be in the dict
     """
     def __init__(self):
-        super().__init__()
+        super().__init__(quiet=True)
         self.commands = []
 
-    def run_command(self, args, **kwargs):
+    def command(self, args, **kwargs):
         self.commands.append((args, kwargs))
         exit_code = 0
         if hasattr(self, 'installed'):
             cmd = args[0]
-            if cmd == 'sudo':
-                cmd = args[1]
-                if cmd == '-S':
-                    cmd = args[2]
             assert cmd in self.installed
             if not self.installed[cmd]:
                 exit_code = 1

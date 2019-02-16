@@ -74,6 +74,6 @@ class TestAnt(unittest.TestCase):
         self.assertTrue(c.applied)
 
     def test_add_non_ant(self):
-        with self.assertRaises(ant.Error) as cm:
+        with self.assertRaises(AssertionError) as cm:
             q = mock.Queen()
             q.add([])

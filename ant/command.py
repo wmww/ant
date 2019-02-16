@@ -5,7 +5,6 @@ class Command(ant.Ant):
         self.args = list(args)
         self.kwargs = {}
         self.deps = []
-        self.sudo = False
         self.result = None
 
     def with_arg(self, arg):
@@ -33,7 +32,7 @@ class Command(ant.Ant):
         return self
 
     def with_sudo(self):
-        self.sudo = True
+        self.kwargs['sudo'] = True
         return self
 
     def with_ignore_error(self):
@@ -52,9 +51,7 @@ class Command(ant.Ant):
         args = self.args
         if not args:
             raise Error('No command arguments supplied')
-        if self.sudo:
-            args = ['sudo', '-S'] + args
-        self.result = queen.run_command(args, **self.kwargs)
+        self.result = queen.command(args, **self.kwargs)
 
     def __str__(self):
         return 'run `' + ' '.join(self.args) + '`'

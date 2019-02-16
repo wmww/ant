@@ -3,15 +3,24 @@ import util.command
 import util.log
 
 class Queen:
-    def __init__(self):
+    def __init__(self, quiet=False):
         self.ants = []
-        self.log = util.log.StreamLogger(self)
+        self.quiet = quiet
+        if self.quiet:
+            self.log = util.log.NullLogger()
+        else:
+            self.log = util.log.StreamLogger(self)
+
+    def _register(self, a):
+        assert isinstance(a, ant.Ant)
+        assert not hasattr(a, 'queen') or a.queen == self, type(a).__name__ + ' ant added to multiple queens'
+        a.queen = self
+        if not hasattr(a, 'log'):
+            a.log = util.log.ProxyLogger(self.log, context=a, prefix='    ')
 
     def add(self, a):
         assert isinstance(a, ant.Ant), 'add must only be given an Ant'
-        assert not hasattr(a, 'queen'), type(a).__name__ + ' ant added to multiple queens'
-        a.queen = self
-        a.log = util.log.StreamLogger(a, prefix='    ')
+        self._register(a)
         self.ants.append(a)
 
     def _list_march(self, ants):
@@ -20,6 +29,7 @@ class Queen:
             if deps:
                 self._list_march(deps)
             self.log.boring(str(a))
+            self._register(a)
             next = a.march(self)
             if next != None and next != []:
                 if isinstance(next, ant.Ant):
@@ -29,7 +39,9 @@ class Queen:
                 self._list_march(next)
                 self.log.boring('Done with ' + str(a))
 
-    def run_command(self, args, **kwargs):
+    def command(self, args, sudo=False, **kwargs):
+        if sudo:
+            args = ['sudo', '-S'] + args
         return util.command.run(args, **kwargs)
 
     def march(self):

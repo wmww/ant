@@ -35,10 +35,23 @@ class Logger:
     def argh(self, *msg):
         self.log(self.context, Type.ARGH, ' '.join(map(lambda m: str(m), msg)))
 
-class StreamLogger(Logger):
-    def __init__(self, context, prefix='', use_color=None):
+class NullLogger(Logger):
+    def log(self, context, log_type, message):
+        pass
+
+class ProxyLogger(Logger):
+    def __init__(self, wrapped, context=None, prefix=''):
         self.context = context
+        assert isinstance(wrapped, Logger)
+        self.wrapped = wrapped
         self.prefix = prefix
+
+    def log(self, context, log_type, message):
+        self.wrapped.log(context, log_type, self.prefix + message)
+
+class StreamLogger(Logger):
+    def __init__(self, context=None, use_color=None):
+        self.context = context
         if use_color is None:
             use_color = color_code.stdout_is_tty()
         if use_color:
@@ -70,6 +83,6 @@ class StreamLogger(Logger):
             context_str = self.color('1;34', ' [' + type(context).__name__ + ']')
         else:
             context_str = ''
-        start = self.color(clr, type_str) + self.prefix + context_str + ': '
+        start = self.color(clr, type_str) + context_str + ': '
         message = message.strip().replace('\n', '\n' + ' ' * len(color_code.remove(start)))
         print(start + message, file=out_file)

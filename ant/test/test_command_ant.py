@@ -4,7 +4,7 @@ import mock
 
 class TestCommandAnt(unittest.TestCase):
     def march(self, a):
-        q = ant.Queen()
+        q = ant.Queen(quiet=True)
         q.add(a)
         q.march()
         return q
@@ -67,7 +67,7 @@ class TestMockCommand(unittest.TestCase):
     def test_with_sudo(self):
         a = ant.Command('ls').with_sudo()
         q = self.march(a)
-        self.assertEqual(q.commands, [(['sudo', '-S', 'ls'], {})])
+        self.assertEqual(q.commands, [(['ls'], {'sudo': True})])
 
     def test_with_ignore_error(self):
         a = ant.Command('ls').with_ignore_error()
@@ -76,14 +76,14 @@ class TestMockCommand(unittest.TestCase):
 
 class TestCommandCheck(unittest.TestCase):
     def test_command_check_true(self):
-        q = ant.Queen()
+        q = ant.Queen(quiet=True)
         a = ant.Command('true').check_success()
         q.add(a)
         q.march()
         self.assertTrue(a.is_true())
 
     def test_command_check_false(self):
-        q = ant.Queen()
+        q = ant.Queen(quiet=True)
         a = ant.Command('false').check_success()
         q.add(a)
         q.march()
